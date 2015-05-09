@@ -29,10 +29,10 @@
           <runcommandpicklistitem>"${OUTPUT_PATH}"</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}" 200</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}" 1000</runcommandpicklistitem>
-          <runcommandpicklistitem>"${OUTPUT_PATH}" 10000</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}" 1</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" 10000</runcommandpicklistitem>
         </runcommandpicklist>
-        <runcommand>"${OUTPUT_PATH}" 1</runcommand>
+        <runcommand>"${OUTPUT_PATH}" 10000</runcommand>
         <rundir></rundir>
         <buildfirst>true</buildfirst>
         <console-type>2</console-type>

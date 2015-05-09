@@ -15,7 +15,7 @@ using namespace std;
 class Processor {
 
     
-    order_book<200> book;
+    order_book book;
     
     uint32_t target_size;
     int32_t expense;

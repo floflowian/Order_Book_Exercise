@@ -16,7 +16,6 @@ typedef struct {
     uint32_t level;
 } idLevel;
 
-template <int levels = 5 >
 struct order_book {
 
     typedef struct {
@@ -64,6 +63,8 @@ struct order_book {
 
     uint32_t bid_insert(uint32_t price, uint32_t quantity, string id) {
         uint32_t level = 1;
+        struct level lvl;
+        entries.push_back(lvl);
         for (int i = 0; i < bidDepth; ++i) {
             uint32_t priceLevel = entries[i].bid.price;
             if (price == priceLevel) {
@@ -74,16 +75,7 @@ struct order_book {
                 break;
             ++level;
         }
-        //        if (level == bidDepth) {
-        //            int levelint = (int) level;
-        //            for (int i = bidDepth - 2; i >= levelint - 1; --i) {
-        //                entries[i + 1].bid.price = entries[i].bid.price;
-        //                entries[i + 1].bid.size = entries[i].bid.size;
-        //            }
-        //            entries[level - 1].bid.price = price;
-        //            entries[level - 1].bid.size = quantity;
-        //        } 
-        if (level <= bidDepth) {
+      if (level <= bidDepth) {
             int levelint = (int) level;
             for (int i = bidDepth - 1; i >= levelint - 1; --i) {
                 if(entries[i].bid.id=="f"){
@@ -104,12 +96,13 @@ struct order_book {
             entries[bidDepth].bid.id = id;
         }
         ++bidDepth;
-//        std::cout<<"bidDepth = "<<bidDepth<<std::endl;
         return level;
     }
 
     uint32_t ask_insert(uint32_t price, uint32_t quantity, std::string id) {
         uint32_t level = 1;
+        level lvl;
+        entries.push_back(lvl);
         for (int i = 0; i < askDepth; ++i) {
             uint32_t priceLevel = entries[i].ask.price;
             if (price == priceLevel) {
@@ -120,16 +113,7 @@ struct order_book {
                 break;
             ++level;
         }
-        //        if (level == askDepth) {
-        //            int levelint = (int) level;
-        //            for (int i = askDepth - 2; i >= levelint - 1; --i) {
-        //                entries[i + 1].ask.price = entries[i].ask.price;
-        //                entries[i + 1].ask.size = entries[i].ask.size;
-        //            }
-        //            entries[level - 1].ask.price = price;
-        //            entries[level - 1].ask.size = quantity;
-        //        } 
-        if (level <= askDepth) {
+       if (level <= askDepth) {
             int levelint = (int) level;
             for (int i = askDepth - 1; i >= levelint - 1; --i) {
                 std::map<std::string, idLevel>::iterator it = orderIdLevel.find(entries[i].ask.id);
@@ -147,12 +131,11 @@ struct order_book {
             entries[askDepth].ask.id = id;
         }
         ++askDepth;
-//        std::cout<<"askDepth = "<<askDepth<<std::endl;
         return level;
     }
 
     void bid_remove(uint32_t level) {
-        if (level < 1 || level > levels || level > bidDepth)
+        if (level < 1 || level > entries.size() || level > bidDepth)
             throw std::logic_error("Cannot remove bid level");
         if (level == bidDepth) {
             entries[level - 1].bid.price = 0;
@@ -167,17 +150,18 @@ struct order_book {
                 entries[i - 1].bid.size = entries[i].bid.size;
                 entries[i - 1].bid.id = entries[i].bid.id;
             }
-            entries[bidDepth - 1].bid.price = 0;
-            entries[bidDepth - 1].bid.size = 0;
-            entries[bidDepth - 1].bid.id = "";
+
+        entries.pop_back();
+//            entries[bidDepth - 1].bid.price = 0;
+//            entries[bidDepth - 1].bid.size = 0;
+//            entries[bidDepth - 1].bid.id = "";
         }
 
         --bidDepth;
-//        std::cout<<"bidDepth = "<<bidDepth<<std::endl;
     }
 
     void ask_remove(uint32_t level) {
-        if (level < 1 || level > levels || level > askDepth)
+        if (level < 1 || level > entries.size() || level > askDepth)
             throw std::logic_error("Cannot remove ask level");
         if (level == askDepth) {
             entries[level - 1].ask.price = 0;
@@ -192,13 +176,13 @@ struct order_book {
                 entries[i - 1].ask.size = entries[i].ask.size;
                 entries[i - 1].ask.id = entries[i].ask.id;
             }
-            entries[askDepth - 1].ask.price = 0;
-            entries[askDepth - 1].ask.size = 0;
-            entries[askDepth - 1].ask.id = "";
+            entries.pop_back();
+//            entries[askDepth - 1].ask.price = 0;
+//            entries[askDepth - 1].ask.size = 0;
+//            entries[askDepth - 1].ask.id = "";
         }
 
         --askDepth;
-//        std::cout<<"askDepth = "<<askDepth<<std::endl;
     }
 
     void bid_display() {
@@ -227,7 +211,7 @@ struct order_book {
 
     uint32_t bidDepth = 0;
     uint32_t askDepth = 0;
-    level entries[levels];
+    vector<level> entries;
     std::map<std::string, idLevel> orderIdLevel;
 };
 
