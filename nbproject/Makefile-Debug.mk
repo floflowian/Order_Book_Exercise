@@ -66,12 +66,12 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/pricer.exe: ${OBJECTFILES}
 ${OBJECTDIR}/book/order_book.o: book/order_book.cpp 
 	${MKDIR} -p ${OBJECTDIR}/book
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/book/order_book.o book/order_book.cpp
+	$(COMPILE.cc) -g -I. -I/C/boost_1_58_0 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/book/order_book.o book/order_book.cpp
 
 ${OBJECTDIR}/main.o: main.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -I. -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main.o main.cpp
+	$(COMPILE.cc) -g -I. -I/C/boost_1_58_0 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main.o main.cpp
 
 # Subprojects
 .build-subprojects:

@@ -10,13 +10,9 @@
 
 #include <iomanip> 
 using namespace std;
-    
-    
-class Processor {
 
-    
+class Processor {
     order_book book;
-    
     uint32_t target_size;
     int32_t expense;
     int32_t income;
@@ -24,7 +20,6 @@ class Processor {
 public:
 
     Processor(uint32_t target) : target_size(target), expense(-1), income(-1) {
-
     }
 
     void updateIncome(uint32_t timestamp) {
@@ -78,7 +73,6 @@ public:
         if (currentIncome != income) {
             if (income != -1) {
                 double incomeDisplay = income / 10e2;
-                
                 cout << timestamp << " B " << fixed << setprecision(2) << incomeDisplay << endl;
             } else {
                 cout << timestamp << " B " << "NA" << endl;
@@ -91,7 +85,7 @@ public:
         char action;
         string orderId;
         uint32_t size;
-        
+
         try {
             timestamp = stoi(tokens[0]);
             action = tokens[1][0];
@@ -101,40 +95,33 @@ public:
             cerr << "Invalid line " << lineNumber << endl;
             return;
         }
-        if(timestamp==28902467){
-            cout<<endl;
-        }
-        if (action == 'R') {
-            std::map<std::string, idLevel>::iterator it = book.orderIdLevel.find(orderId);
-            if (it != book.orderIdLevel.end()) {
-                if (it->second.side == 1) {
-                    uint32_t currentQty = book.ask_getLevel(it->second.level).size;
-                    if (currentQty - size == 0){
-                        book.ask_remove(it->second.level);
-                        book.orderIdLevel.erase(orderId);
-                    }
-                    else if(currentQty - size > 0)
-                        book.ask_getLevel(it->second.level).size = currentQty - size;
-                    else 
-                        throw std::logic_error("Cannot reduce ask quantity of order below 0");
-                } else if (it->second.side == 2) {
-                    uint32_t currentQty = book.bid_getLevel(it->second.level).size;
-                    if (currentQty - size == 0){
-                        book.bid_remove(it->second.level);
-                        book.orderIdLevel.erase(orderId);
-                    }
-                    else if(currentQty - size > 0)
-                        book.bid_getLevel(it->second.level).size = currentQty - size;
-                    else 
-                        throw std::logic_error("Cannot reduce bid quantity of order below 0");
+        std::map<std::string, idLevel>::iterator it = book.orderIdLevel.find(orderId);
+        if (it != book.orderIdLevel.end()) {
+            if (it->second.side == Side::Ask) {
+                uint32_t currentQty = book.ask_getLevel(it->second.level).size;
+                book.totalAskQuantity -= size;
+                if (currentQty - size == 0) {
+                    book.ask_remove(it->second.level);
+                    book.orderIdLevel.erase(orderId);
+                } else if (currentQty - size > 0) {
+                    book.ask_getLevel(it->second.level).size = currentQty - size;
+                } else
+                    throw std::logic_error("Cannot reduce ask quantity of order below 0");
+            } else if (it->second.side == Side::Bid) {
+                uint32_t currentQty = book.bid_getLevel(it->second.level).size;
+                book.totalBidQuantity -= size;
+                if (currentQty - size == 0) {
+                    book.bid_remove(it->second.level);
+                    book.orderIdLevel.erase(orderId);
+                } else if (currentQty - size > 0) {
+                    book.bid_getLevel(it->second.level).size = currentQty - size;
+                } else
+                    throw std::logic_error("Cannot reduce bid quantity of order below 0");
 
-                }
             }
         } else {
-            cerr << "Unrecognized action on line " << lineNumber << endl;
-            return;
+            cerr << "Order id " << orderId << " not found" << endl;
         }
-
         updateExpense(timestamp);
         updateIncome(timestamp);
     }
@@ -157,22 +144,14 @@ public:
             cerr << "Invalid line " << lineNumber << endl;
             return;
         }
-        if(timestamp==28900102){
-            cout<<endl;
-        }
+        uint32_t priceInt = price * 10e2;
         if (side == 'S') {
-            uint32_t priceInt = price * 10e2;
-            uint32_t insertedLevel = book.ask_insert(priceInt, size,orderId);
-            idLevel o;
-            o.level = insertedLevel;
-            o.side = 1;
+            uint32_t insertedLevel = book.ask_insert(priceInt, size, orderId);
+            idLevel o(insertedLevel, Side::Ask);
             book.orderIdLevel.insert(std::pair<std::string, idLevel>(orderId, o));
         } else if (side == 'B') {
-            uint32_t priceInt = price * 10e2;
-            uint32_t insertedLevel = book.bid_insert(priceInt, size,orderId);
-            idLevel o;
-            o.level = insertedLevel;
-            o.side = 2;
+            uint32_t insertedLevel = book.bid_insert(priceInt, size, orderId);
+            idLevel o(insertedLevel, Side::Bid);
             book.orderIdLevel.insert(std::pair<std::string, idLevel>(orderId, o));
         } else {
             cerr << "Unrecognized side on line " << lineNumber << endl;
@@ -185,21 +164,15 @@ public:
 
     void process_message(vector<string> tokens, uint32_t lineNumber) {
 
-        if (tokens.size() == 4) {
+        if (tokens[1] == "R") {
             reduce_order(tokens, lineNumber);
-        } else if (tokens.size() == 6) {
+        } else if (tokens[1] == "A") {
             add_order(tokens, lineNumber);
         } else {
-            cerr << "Message on line " << lineNumber << " has incorrect size" << endl;
+            cerr << "Undefined action on line " << lineNumber << endl;
             return;
         }
-
-
-
-//        book.bid_display();
-//        book.ask_display();
     }
-
 };
 
 #endif	/* PROCESSOR_H */
